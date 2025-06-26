@@ -5,6 +5,7 @@ on:
     paths:
       - 'blog/*.html'
       - 'images/**'
+      - '.github/workflows/generate-json.yml'
 
 jobs:
   build:
@@ -15,39 +16,51 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Rewrite relative image paths with raw GitHub URLs
+      - name: Rewrite image paths in HTML
         run: |
-          GITHUB_USER="shivamsancc"            # 🔁 Your GitHub username
-          GITHUB_REPO="blog-repo"                  # 🔁 Your repo name
+          GITHUB_USER="shivamsancc"    # 🔁 Replace with your GitHub username
+          GITHUB_REPO="blogs"          # 🔁 Replace with your repo name
           BRANCH="main"
+
           RAW_BASE="https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/$BRANCH/images"
 
           mkdir -p tmp_blog
           for file in blog/*.html; do
-            OUT="tmp_blog/$(basename $file)"
+            OUT="tmp_blog/$(basename "$file")"
             sed -E "s|<img([^>]*?)src=[\"']\.{0,2}/?images/([^\"']+)[\"']|<img\1src=\"$RAW_BASE/\2\"|g" "$file" > "$OUT"
           done
 
-      - name: Convert HTML files to JSON
+      - name: Convert HTML to JSON using jq
         run: |
           mkdir -p json
           echo "[" > index.json
 
+          FIRST=1
           for file in tmp_blog/*.html; do
             FILENAME=$(basename "$file" .html)
             TITLE=$(grep -oP '(?<=<h1>).*?(?=</h1>)' "$file" | head -1)
             DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            CONTENT=$(cat "$file")
 
-            # escape content
-            CONTENT=$(cat "$file" | sed ':a;N;$!ba;s/\n/\\n/g' | sed 's/"/\\"/g')
+            # Write full post JSON
+            jq -n \
+              --arg slug "$FILENAME" \
+              --arg title "$TITLE" \
+              --arg date "$DATE" \
+              --arg content "$CONTENT" \
+              '{slug: $slug, title: $title, date: $date, content: $content}' > "json/$FILENAME.json"
 
-            JSON_CONTENT="{\"slug\":\"$FILENAME\",\"title\":\"$TITLE\",\"date\":\"$DATE\",\"content\":\"$CONTENT\"}"
+            # Append to index.json
+            if [ $FIRST -eq 0 ]; then echo "," >> index.json; fi
+            FIRST=0
 
-            echo "$JSON_CONTENT" > "json/$FILENAME.json"
-            echo "  {\"slug\":\"$FILENAME\",\"title\":\"$TITLE\",\"date\":\"$DATE\"}," >> index.json
+            jq -n \
+              --arg slug "$FILENAME" \
+              --arg title "$TITLE" \
+              --arg date "$DATE" \
+              '{slug: $slug, title: $title, date: $date}' >> index.json
           done
 
-          sed -i '$ s/,$//' index.json
           echo "]" >> index.json
 
       - name: Commit and push
