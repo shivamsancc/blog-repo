@@ -1,6 +1,6 @@
 {
   "slug": "my-first-post",
   "title": "My First Post",
-  "date": "2025-06-26T07:51:32Z",
-  "content": "<!-- blog/my-first-post.html -->\n<h1>My First Post</h1>\n<p>This is a test blog post from CKEditor</p>\n<img src=\"https://raw.githubusercontent.com/shivamsancc/blogs/main/images/india.jpg\" alt=\"\" srcset=\"\">"
+  "date": "2025-06-26T08:00:10Z",
+  "content": "<!-- blog/my-first-post.html -->\n<h1>My First Post</h1>\n<p>This is a test blog post from CKEditor</p>\n<img src=\"https://raw.githubusercontent.com/shivamsancc/blog-repo/refs/heads/main/images/india.jpg\" alt=\"\" srcset=\"\">"
 }
