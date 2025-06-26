@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - 'blog/*.html'
+      - 'images/**'
 
 jobs:
   build:
@@ -14,12 +15,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Rewrite relative image paths with raw GitHub URLs
+        run: |
+          GITHUB_USER="shivamsancc"            # 🔁 Your GitHub username
+          GITHUB_REPO="blog-repo"                  # 🔁 Your repo name
+          BRANCH="main"
+          RAW_BASE="https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/$BRANCH/images"
+
+          mkdir -p tmp_blog
+          for file in blog/*.html; do
+            OUT="tmp_blog/$(basename $file)"
+            sed -E "s|<img([^>]*?)src=[\"']\.{0,2}/?images/([^\"']+)[\"']|<img\1src=\"$RAW_BASE/\2\"|g" "$file" > "$OUT"
+          done
+
       - name: Convert HTML files to JSON
         run: |
           mkdir -p json
           echo "[" > index.json
 
-          for file in blog/*.html; do
+          for file in tmp_blog/*.html; do
             FILENAME=$(basename "$file" .html)
             TITLE=$(grep -oP '(?<=<h1>).*?(?=</h1>)' "$file" | head -1)
             DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -30,11 +44,9 @@ jobs:
             JSON_CONTENT="{\"slug\":\"$FILENAME\",\"title\":\"$TITLE\",\"date\":\"$DATE\",\"content\":\"$CONTENT\"}"
 
             echo "$JSON_CONTENT" > "json/$FILENAME.json"
-
             echo "  {\"slug\":\"$FILENAME\",\"title\":\"$TITLE\",\"date\":\"$DATE\"}," >> index.json
           done
 
-          # remove last comma from index
           sed -i '$ s/,$//' index.json
           echo "]" >> index.json
 
@@ -43,5 +55,5 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
           git add json/*.json index.json
-          git commit -m "Update JSON blog posts" || echo "No changes to commit"
+          git commit -m "Update JSON blog posts with fixed image paths" || echo "No changes to commit"
           git push
