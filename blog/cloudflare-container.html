@@ -1,0 +1,208 @@
+<h1>🚀 Cloudflare Containers: The Next Evolution of Serverless, Now with Docker at the Edge</h1>
+
+<hr />
+<p>When Cloudflare introduced <strong>Workers</strong>, it redefined serverless by letting developers run lightweight JavaScript and WebAssembly code at the edge &mdash; globally, instantly, and securely. But Workers had one big limitation: they couldn&rsquo;t run your existing binaries, Docker containers, or full runtimes.</p>
+
+<p>That&rsquo;s changing now.</p>
+
+<blockquote><strong>🔥 Cloudflare Containers</strong> &ndash; Run full Linux containers at the edge, controlled by Workers, and scaled serverlessly.</blockquote>
+
+<p>This article dives into what Cloudflare Containers are, how they work, and why they may change the way you build and deploy applications at the edge.</p>
+
+<hr />
+<h2>🧱 What Are Cloudflare Containers?</h2>
+
+<p>Cloudflare Containers let you run <strong>Docker/OCI-compatible Linux containers</strong> across Cloudflare&rsquo;s global network of 330+ data centers. You can now bring:</p>
+
+<ul>
+	<li>Full language runtimes (Python, Go, Java, etc.)</li>
+	<li>CLI tools</li>
+	<li>Custom binaries</li>
+	<li>Heavier workloads like AI inferences or video processing</li>
+</ul>
+
+<p>You define your container in a Dockerfile, and Cloudflare handles the rest &mdash; from global distribution to scaling and orchestration.</p>
+
+<h2>🧠 How It Works</h2>
+
+<p>The magic lies in the integration between <strong>Cloudflare Workers</strong> and <strong>Containers</strong>:</p>
+
+<ol>
+	<li><strong>You define a container image</strong> using a Dockerfile or an existing OCI image.</li>
+	<li><strong>You write a Worker script</strong>, which acts as the control plane &mdash; deciding when to spin up containers, route requests, or shut them down.</li>
+	<li><strong>Cloudflare handles orchestration</strong>, running your containers close to your users with cold starts in seconds and per-request billing.</li>
+</ol>
+
+<blockquote><strong>Think of it as:</strong><br />
+Worker = lightweight router<br />
+Container = full-powered runtime</blockquote>
+
+<h2>✨ Key Features</h2>
+
+<ul>
+	<li><strong>Edge Deployment &mdash; Everywhere:</strong> Deploy once to &ldquo;Earth&rdquo; and Cloudflare handles location-based execution.</li>
+	<li><strong>Serverless-Like Scaling:</strong> Spin up on demand, scale to zero when idle.</li>
+	<li><strong>Built for Heavy Lifting:</strong> Run Java apps, AI workloads, CLI tools, etc.</li>
+	<li><strong>Native Docker Integration:</strong> Define, build, and deploy using Wrangler CLI.</li>
+</ul>
+
+<pre>
+<code>wrangler deploy</code></pre>
+
+<h2>💸 Pricing Overview</h2>
+
+<p>Cloudflare Containers are billed by runtime in <strong>10ms increments</strong>, based on:</p>
+
+<ul>
+	<li><strong>CPU:</strong> $0.000020 per vCPU-s</li>
+	<li><strong>Memory:</strong> $0.0000025 per GB-s</li>
+	<li><strong>Disk:</strong> $0.00000007 per GB-s</li>
+</ul>
+
+<p>You only pay when your container is actually running.</p>
+
+<h2>🛠️ Developer Experience</h2>
+
+<h3>✅ Local Dev with Docker + Wrangler</h3>
+
+<pre>
+<code>npm create cloudflare@latest -- --template containers-template
+cd my-app
+wrangler dev</code></pre>
+
+<h3>✅ Define a Container Class</h3>
+
+<pre>
+<code>import { Container } from &#39;@cloudflare/containers&#39;;
+
+export class MyContainer extends Container {
+  defaultPort = 8080;
+  sleepAfter = &#39;5m&#39;;
+}</code></pre>
+
+<h3>✅ Fetch from Worker</h3>
+
+<pre>
+<code>export default {
+  async fetch(request, env, ctx) {
+    const inst = env.MY_CONTAINER.get(&#39;session-id&#39;);
+    return await inst.fetch(request);
+  }
+}</code></pre>
+
+<h2>🔒 Built-In Security</h2>
+
+<p>Cloudflare Containers are designed with isolation in mind:</p>
+
+<ul>
+	<li>Run in microVMs</li>
+	<li>Sandboxed environments</li>
+	<li>Fully isolated per request/session</li>
+	<li>Minimal attack surface</li>
+</ul>
+
+<h2>🗺️ Real-World Use Cases</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+	<thead>
+		<tr>
+			<th>Use Case</th>
+			<th>Benefit</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>API sandbox</td>
+			<td>Spin up secure, isolated containers for each user</td>
+		</tr>
+		<tr>
+			<td>Media processing</td>
+			<td>Handle video/image workloads near the user</td>
+		</tr>
+		<tr>
+			<td>Legacy migration</td>
+			<td>Run monoliths in containerized edge environments</td>
+		</tr>
+		<tr>
+			<td>AI inference</td>
+			<td>Run models (GPU support coming soon)</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2>📦 Instance Types (Beta)</h2>
+
+<table border="1" cellpadding="8" cellspacing="0">
+	<thead>
+		<tr>
+			<th>Type</th>
+			<th>RAM</th>
+			<th>vCPU</th>
+			<th>Disk</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>dev</td>
+			<td>256 MiB</td>
+			<td>1/16</td>
+			<td>2 GB</td>
+		</tr>
+		<tr>
+			<td>basic</td>
+			<td>1 GiB</td>
+			<td>1/4</td>
+			<td>4 GB</td>
+		</tr>
+		<tr>
+			<td>standard</td>
+			<td>4 GiB</td>
+			<td>1/2</td>
+			<td>4 GB</td>
+		</tr>
+	</tbody>
+</table>
+
+<p>Beta accounts have limits of:</p>
+
+<ul>
+	<li>20 concurrent vCPUs</li>
+	<li>40 GB memory</li>
+	<li>100 GB total disk</li>
+</ul>
+
+<h2>🔮 What&rsquo;s Coming Next?</h2>
+
+<ul>
+	<li>Autoscaling support</li>
+	<li>Built-in load balancing</li>
+	<li>Higher instance limits</li>
+	<li>Performance metrics and logs</li>
+</ul>
+
+<h2>🧪 Should You Use It?</h2>
+
+<p>If you&rsquo;ve hit the limits of serverless platforms like Workers, AWS Lambda, or Vercel &mdash; especially when you want to run a real binary or runtime &mdash; <strong>Cloudflare Containers</strong> are a game-changer.</p>
+
+<ul>
+	<li>Need full Linux environments? ✔️</li>
+	<li>Can&rsquo;t rewrite into Workers? ✔️</li>
+	<li>Want global performance? ✔️</li>
+</ul>
+
+<h2>📝 Final Thoughts</h2>
+
+<p>Cloudflare Containers open a new era in edge computing &mdash; merging the raw power of containers with the elegance and scalability of serverless. If you already use Docker and Cloudflare, the integration is seamless. If you&#39;re building next-gen apps, this gives you full control with zero ops.</p>
+
+<blockquote><strong>With Workers + Containers, your edge can now <em>run anything</em> &mdash; globally, securely, and affordably.</strong></blockquote>
+
+<h2>📚 Resources</h2>
+
+<ul>
+	<li><a href="https://developers.cloudflare.com/containers/">Official Docs</a></li>
+	<li><a href="https://blog.cloudflare.com/cloudflare-containers-coming-2025/">Launch Blog</a></li>
+	<li><a href="https://developers.cloudflare.com/workers/wrangler/">Wrangler CLI</a></li>
+</ul>
+
+<hr />
+<p><em>Want help getting started? Drop your use case in the comments below or connect with me.</em></p>
