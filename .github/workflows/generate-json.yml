@@ -18,10 +18,9 @@ jobs:
 
       - name: Rewrite image paths in HTML
         run: |
-          GITHUB_USER="shivamsancc"    # 🔁 Replace with your GitHub username
-          GITHUB_REPO="blogs"          # 🔁 Replace with your repo name
-          BRANCH="main"
-
+          GITHUB_USER="shivamsancc"                  # ✅ Your GitHub username
+          GITHUB_REPO="blog-repo"                    # ✅ Your repo name
+          BRANCH="refs/heads/${GITHUB_REF_NAME}"     # ✅ Proper raw ref
           RAW_BASE="https://raw.githubusercontent.com/$GITHUB_USER/$GITHUB_REPO/$BRANCH/images"
 
           mkdir -p tmp_blog
